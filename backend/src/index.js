@@ -1,27 +1,20 @@
 import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
-import mongoose, { Query } from "mongoose";
-import dotenv from "dotenv"
+import mongoose from "mongoose";
+import { typeDefs } from "./graphql/schema.js";
+import { resolvers } from "./graphql/schema.js";
+import dotenv from 'dotenv'
 import cors from "cors"
-dotenv.config();
+
+import {authMiddleWare} from './middleware/auth.js'
+dotenv.config()
  
 const app =express();
- 
-mongoose.connect(process.env.MONGO_URL)
-.then(()=>console.log("MongoDB connected"))
-.catch(err=> console.error("Mongodb error:",err));
- 
-const typeDefs = `
-type Query{
-hello:String
-}
-`;
-const resolvers = {
-    Query:{
-        hello:()=> "Hello Banking App Backend",
-    },
-};
+
+app.use(express.json())
+
+
  
 const server = new ApolloServer({
     typeDefs,
@@ -33,14 +26,27 @@ const startServer = async()=>{
     app.use(
         '/graphql',
         cors(),
-        express.json(),
-        expressMiddleware(server)
+        expressMiddleware(server,{
+            context:async({req,res})=>{
+                authMiddleWare(req,res,()=>{ })
+                console.log(req.user)
+                return {user:req.user}
+            }
+        })
     )
-    const PORT = process.env.PORT || 4000;
+};
+
+
+mongoose.connect('mongodb://localhost:27017/banking-app')
+.then(()=>{
+    console.log('Mongo Db connected')
+    const PORT = process.env.PORT;
     app.listen(PORT,()=>{
         console.log(`Server ready at http://localhost:${PORT}/graphql`);
     });
-};
+}).catch(err=> console.error("Mongodb error:"));
  
+
+
 startServer()
  
