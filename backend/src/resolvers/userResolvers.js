@@ -21,6 +21,7 @@ export const userResolvers = {
       }
     },
     user: async (_, { id }, { user }) => {
+      console.log(user)
       if (!user) throw new Error("Authentication Required");
       try {
         const foundUser = await User.findById(id);
@@ -79,12 +80,12 @@ export const userResolvers = {
       if (!user) throw new Error("Invalid credentials");
 
       const isMatch = await user.comparePassword(password);
-      if (!isMatch) throw new Error("Invalid credentials");
+      if (!isMatch) throw new Error("Invalid credentials");;
 
       const token = jwt.sign(
         { userId: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "3h" }
       );
 
       return { token, user };
