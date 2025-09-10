@@ -6,47 +6,47 @@ import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/schema.js";
 import dotenv from 'dotenv'
 import cors from "cors"
-
+import accountRoutes from './routes/acountRoutes.js'
 import {authMiddleWare} from './middleware/auth.js'
 dotenv.config()
  
-const app =express();
-
+const app = express();
+ 
 app.use(express.json())
-
-
  
 const server = new ApolloServer({
     typeDefs,
     resolvers
 });
  
-const startServer = async()=>{
+ 
+ 
+const startServer = async () => {
     await server.start();
+    app.use("/api/accounts", accountRoutes)
     app.use(
         '/graphql',
         cors(),
-        expressMiddleware(server,{
-            context:async({req,res})=>{
-                authMiddleWare(req,res,()=>{ })
-                console.log(req.user)
-                return {user:req.user}
+        expressMiddleware(server, {
+            context: async ({ req, res }) => {
+                authMiddleWare(req, res, () => { })
+                return { user: req.user }
             }
         })
     )
 };
-
-
-mongoose.connect('mongodb://localhost:27017/banking-app')
-.then(()=>{
-    console.log('Mongo Db connected')
-    const PORT = process.env.PORT;
-    app.listen(PORT,()=>{
-        console.log(`Server ready at http://localhost:${PORT}/graphql`);
-    });
-}).catch(err=> console.error("Mongodb error:"));
  
-
-
+ 
+mongoose.connect('mongodb://localhost:27017/banking-app')
+    .then(() => {
+        console.log('Mongo Db connected')
+        const PORT = process.env.PORT;
+        app.listen(PORT, () => {
+            console.log(`Server ready at http://localhost:${PORT}/graphql`);
+        });
+    }).catch(err => console.error("Mongodb error:"));
+ 
+ 
+ 
 startServer()
  
