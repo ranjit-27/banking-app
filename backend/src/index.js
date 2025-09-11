@@ -7,6 +7,7 @@ import { resolvers } from "./graphql/schema.js";
 import dotenv from 'dotenv'
 import cors from "cors"
 import accountRoutes from './routes/acountRoutes.js'
+import loanRoutes from './routes/loanRoutes.js'
 import {authMiddleWare} from './middleware/auth.js'
 dotenv.config()
  
@@ -24,6 +25,7 @@ const server = new ApolloServer({
 const startServer = async () => {
     await server.start();
     app.use("/api/accounts", accountRoutes)
+    app.use("/api/loans",loanRoutes)
     app.use(
         '/graphql',
         cors(),
